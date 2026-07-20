@@ -1,7 +1,6 @@
 from pathlib import Path
 
 import streamlit as st
-
 from components.theme import configure_page
 from components.sidebar import render_sidebar
 

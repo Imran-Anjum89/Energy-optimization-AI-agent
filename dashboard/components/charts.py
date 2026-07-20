@@ -59,6 +59,6 @@ def daily_usage_chart():
 
         fig,
 
-        use_container_width=True
+        width="stretch"
 
     )

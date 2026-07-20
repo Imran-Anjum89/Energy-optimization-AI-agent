@@ -5,7 +5,7 @@ from components.header import render_header
 from components.sidebar import render_sidebar
 from components.theme import configure_page
 from utils.data_loader import load_forecast_data
-
+from components.floating_ai import floating_ai
 configure_page()
 render_sidebar()
 render_header()
@@ -77,7 +77,7 @@ if forecast_data:
         legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
     )
     
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width="stretch")
 
     # 3. Forecast Table View
     st.subheader("📋 Forecast Data Table")
@@ -87,7 +87,8 @@ if forecast_data:
         "Lower_Bound": "Lower Confidence (kWh)",
         "Upper_Bound": "Upper Confidence (kWh)"
     })
-    st.dataframe(display_df, use_container_width=True, hide_index=True)
+    st.dataframe(display_df, width="stretch", hide_index=True)
 
 else:
     st.warning("Unable to load forecasting data.")
+floating_ai()
