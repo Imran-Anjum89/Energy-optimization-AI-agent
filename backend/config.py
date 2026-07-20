@@ -1,0 +1,126 @@
+"""
+Project Configuration
+Energy Optimization Agent
+"""
+
+import os
+from pathlib import Path
+
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    # python-dotenv is optional - env vars can still be set directly
+    pass
+
+
+class Config:
+    """Central configuration class."""
+
+    # =====================================================
+    # PROJECT ROOT
+    # =====================================================
+    BASE_DIR = Path(__file__).resolve().parent.parent
+
+    # =====================================================
+    # DATA DIRECTORIES
+    # =====================================================
+    DATA_DIR = BASE_DIR / "data"
+    RAW_DATA_DIR = DATA_DIR / "raw"
+    PROCESSED_DATA_DIR = DATA_DIR / "processed"
+
+    # =====================================================
+    # OUTPUT DIRECTORIES
+    # =====================================================
+    OUTPUT_DIR = BASE_DIR / "outputs"
+    LOG_DIR = BASE_DIR / "logs"
+
+    # =====================================================
+    # MODEL DIRECTORY
+    # =====================================================
+    MODEL_DIR = BASE_DIR / "models"
+
+    # =====================================================
+    # APPLICATION SETTINGS
+    # =====================================================
+    APP_NAME = "Energy Optimization Agent"
+    VERSION = "1.0.0"
+
+    # =====================================================
+    # FORECAST SETTINGS
+    # =====================================================
+    FORECAST_HORIZON = 24
+
+    # =====================================================
+    # ANOMALY DETECTION
+    # =====================================================
+    ANOMALY_THRESHOLD = 0.85
+
+    # =====================================================
+    # SAVINGS CALCULATION
+    # =====================================================
+    # =====================================================
+    # LLM / INSIGHT AGENT SETTINGS
+    # =====================================================
+    INSIGHT_MAX_TOKENS = 1024
+
+    @property
+    def ELECTRICITY_RATE(self) -> float:
+        try:
+            from dotenv import load_dotenv
+            load_dotenv(self.BASE_DIR / ".env", override=True)
+        except Exception:
+            pass
+        try:
+            return float(os.environ.get("ELECTRICITY_RATE", 8.0))
+        except ValueError:
+            return 8.0
+
+    @ELECTRICITY_RATE.setter
+    def ELECTRICITY_RATE(self, value):
+        os.environ["ELECTRICITY_RATE"] = str(value)
+
+    @property
+    def CO2_PER_KWH(self) -> float:
+        try:
+            from dotenv import load_dotenv
+            load_dotenv(self.BASE_DIR / ".env", override=True)
+        except Exception:
+            pass
+        try:
+            return float(os.environ.get("CO2_PER_KWH", 0.82))
+        except ValueError:
+            return 0.82
+
+    @CO2_PER_KWH.setter
+    def CO2_PER_KWH(self, value):
+        os.environ["CO2_PER_KWH"] = str(value)
+
+    @property
+    def ANTHROPIC_API_KEY(self):
+        try:
+            from dotenv import load_dotenv
+            load_dotenv(self.BASE_DIR / ".env", override=True)
+        except Exception:
+            pass
+        return os.environ.get("ANTHROPIC_API_KEY")
+
+    @ANTHROPIC_API_KEY.setter
+    def ANTHROPIC_API_KEY(self, value):
+        os.environ["ANTHROPIC_API_KEY"] = str(value) if value else ""
+
+    @property
+    def INSIGHT_MODEL(self):
+        try:
+            from dotenv import load_dotenv
+            load_dotenv(self.BASE_DIR / ".env", override=True)
+        except Exception:
+            pass
+        return os.environ.get("INSIGHT_MODEL", "claude-sonnet-4-6")
+
+    @INSIGHT_MODEL.setter
+    def INSIGHT_MODEL(self, value):
+        os.environ["INSIGHT_MODEL"] = str(value) if value else "claude-sonnet-4-6"
+
+
+config = Config()

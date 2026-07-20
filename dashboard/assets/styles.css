@@ -1,0 +1,51 @@
+/* Navigation Links */
+
+a[data-testid="stPageLink"]{
+
+    background:white;
+
+    border-radius:10px;
+
+    padding:10px;
+
+    margin-bottom:8px;
+
+    border:1px solid #E5E7EB;
+
+    transition:0.2s;
+
+}
+
+/* Hover */
+
+a[data-testid="stPageLink"]:hover{
+
+    background:#DCFCE7;
+
+    border-color:#22C55E;
+
+}
+
+/* Sidebar Headings */
+
+section[data-testid="stSidebar"] h3{
+
+    color:#15803D;
+
+}
+
+/* Sidebar Caption */
+
+section[data-testid="stSidebar"]{
+
+    padding-top:10px;
+
+}
+
+/* Success Box */
+
+[data-testid="stAlert"]{
+
+    border-radius:10px;
+
+}
