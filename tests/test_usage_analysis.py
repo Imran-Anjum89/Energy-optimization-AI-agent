@@ -21,7 +21,7 @@ def test_usage_report_values(usage_report):
 
     assert report["summary"]["total_records"] > 0
     assert report["consumption"]["average_daily_energy_kwh"] >= 0
-    assert report["quality"]["completeness_percent"] >= 0
+    assert report["quality"]["data_completeness_percent"] >= 0
 
     assert 0 <= report["peak_usage"]["peak_hour"] <= 23
 

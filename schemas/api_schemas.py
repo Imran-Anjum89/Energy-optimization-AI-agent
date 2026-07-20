@@ -14,25 +14,32 @@ class DatasetSummarySchema(BaseModel):
     duplicate_rows: int
 
 class DataQualitySchema(BaseModel):
-    total_cells: int
+    rows: int
+    columns: int
     missing_values: int
-    completeness_percent: float
+    duplicate_rows: int
+    data_completeness_percent: float
 
 class ConsumptionAnalysisSchema(BaseModel):
     total_energy_kwh: float
+    average_power_kw: float
     average_daily_energy_kwh: float
-    average_hourly_energy_kwh: float
+    average_monthly_energy_kwh: float
+    maximum_daily_energy_kwh: float
+    minimum_daily_energy_kwh: float
+    maximum_hourly_average_kw: float
+    minimum_hourly_average_kw: float
 
 class PeakUsageSchema(BaseModel):
     peak_hour: int
+    lowest_hour: int
     peak_hour_average_kw: float
-    peak_day: str
-    peak_day_energy_kwh: float
+    lowest_hour_average_kw: float
 
 class TrendAnalysisSchema(BaseModel):
-    monthly_averages: Dict[str, float]
-    highest_month: str
-    lowest_month: str
+    hourly_trend: Dict[str, float]
+    daily_trend: Dict[str, float]
+    monthly_trend: Dict[str, float]
 
 class WeekdayWeekendSchema(BaseModel):
     weekday_average_kw: float
@@ -58,13 +65,16 @@ class UsageReportSchema(BaseModel):
 # FORECAST SCHEMAS
 # =====================================================
 class ForecastSummarySchema(BaseModel):
-    model_name: str
-    trend_direction: str
-    total_days_predicted: int
+    training_samples: int
+    training_start: str
+    training_end: str
+    forecast_days: int
+    model: str
 
 class ForecastStatisticsSchema(BaseModel):
-    average_predicted_energy: float
-    peak_predicted_energy: float
+    minimum_prediction: float
+    maximum_prediction: float
+    average_prediction: float
     total_predicted_energy: float
 
 class ForecastEvaluationSchema(BaseModel):
@@ -78,8 +88,8 @@ class ForecastEvaluationSchema(BaseModel):
 class ForecastPredictionRowSchema(BaseModel):
     Date: str
     Predicted_Energy_kWh: float
-    yhat_lower: float
-    yhat_upper: float
+    Lower_Bound: float
+    Upper_Bound: float
 
 class ForecastReportSchema(BaseModel):
     summary: ForecastSummarySchema

@@ -19,6 +19,7 @@ import pandas as pd
 from prophet import Prophet
 
 from backend.config import config
+from backend.database import DatabaseManager
 from services.logger import setup_logger
 
 logger = setup_logger("ForecastModel")
@@ -50,15 +51,12 @@ class ForecastingModel:
 
     def load_data(self):
         """
-        Load processed dataset.
+        Load processed dataset from database.
         """
 
-        logger.info("Loading processed dataset...")
+        logger.info("Loading processed dataset from database...")
 
-        self.df = pd.read_csv(
-            self.file_path,
-            parse_dates=["Datetime"]
-        )
+        self.df = DatabaseManager.get_data()
 
         logger.info(
             f"Dataset Loaded : {len(self.df):,} rows"

@@ -6,6 +6,7 @@ Energy Optimization Agent
 import pandas as pd
 
 from backend.config import config
+from backend.database import DatabaseManager
 from services.logger import setup_logger
 
 logger = setup_logger("Preprocessing")
@@ -105,7 +106,7 @@ class DataPreprocessor:
 
     def save_processed_data(self, df):
         """
-        Save cleaned dataset.
+        Save cleaned dataset to CSV and SQLite database.
         """
         output_path = (
             config.PROCESSED_DATA_DIR /
@@ -117,6 +118,12 @@ class DataPreprocessor:
         logger.info(
             f"Processed dataset saved to:\n{output_path}"
         )
+
+        try:
+            DatabaseManager.save_data(df)
+            logger.info("Processed dataset saved to database successfully.")
+        except Exception as e:
+            logger.error(f"Failed to save data to database: {e}")
 
     def preprocess(self):
         """

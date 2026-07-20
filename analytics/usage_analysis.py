@@ -15,6 +15,7 @@ Project: Energy Optimization Agent
 import pandas as pd
 
 from backend.config import config
+from backend.database import DatabaseManager
 from services.logger import setup_logger
 
 
@@ -48,15 +49,12 @@ class UsageAnalyzer:
 
     def load_processed_data(self):
         """
-        Load processed dataset.
+        Load processed dataset from database.
         """
 
-        logger.info("Loading processed dataset...")
+        logger.info("Loading processed dataset from database...")
 
-        df = pd.read_csv(
-            self.file_path,
-            parse_dates=["Datetime"]
-        )
+        df = DatabaseManager.get_data()
 
         logger.info(
             f"Loaded {len(df):,} records successfully."

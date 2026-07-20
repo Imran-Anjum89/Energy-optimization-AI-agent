@@ -9,6 +9,7 @@ import pandas as pd
 from sklearn.ensemble import IsolationForest
 
 from backend.config import config
+from backend.database import DatabaseManager
 from services.logger import setup_logger
 
 logger = setup_logger("AnomalyDetection")
@@ -37,12 +38,9 @@ class AnomalyDetectionModel:
 
     def load_data(self):
 
-        logger.info("Loading processed dataset...")
+        logger.info("Loading processed dataset from database...")
 
-        self.df = pd.read_csv(
-            self.file_path,
-            parse_dates=["Datetime"]
-        )
+        self.df = DatabaseManager.get_data()
 
         logger.info(
             f"Loaded {len(self.df):,} records."
