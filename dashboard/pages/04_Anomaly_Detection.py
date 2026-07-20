@@ -12,8 +12,13 @@ render_header()
 
 st.title("🚨 Anomaly Detection")
 
+active_id = st.session_state.get("active_dataset_id")
+if not active_id:
+    st.warning("⚠️ No active dataset found. Please upload a dataset on the Overview page to unlock anomaly detection!")
+    st.stop()
+
 with st.spinner("Analyzing anomalies via Isolation Forest..."):
-    anomaly_data = load_anomaly_data()
+    anomaly_data = load_anomaly_data(active_id)
 
 if anomaly_data:
     # 1. KPIs

@@ -6,28 +6,34 @@ from components.charts import daily_usage_chart
 from components.metrics import current_usage
 from components.agent_pipeline import render_pipeline
 from components.recommendation_cards import recommendations
+from components.onboarding import render_onboarding_wizard
 
 
 render_header()
 
-render_kpi_cards()
+active_dataset_id = st.session_state.get("active_dataset_id")
 
-st.write("")
+if active_dataset_id is None:
+    render_onboarding_wizard()
+else:
+    render_kpi_cards()
 
-left, right = st.columns([2,1])
+    st.write("")
 
-with left:
+    left, right = st.columns([2,1])
 
-    daily_usage_chart()
+    with left:
 
-with right:
+        daily_usage_chart()
 
-    current_usage()
+    with right:
 
-st.write("")
+        current_usage()
 
-render_pipeline()
+    st.write("")
 
-st.write("")
+    render_pipeline()
 
-recommendations()
+    st.write("")
+
+    recommendations()

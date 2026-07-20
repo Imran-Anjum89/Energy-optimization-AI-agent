@@ -10,12 +10,50 @@ render_header()
 
 st.title("📄 Audit Reports")
 
+active_dataset_id = st.session_state.get("active_dataset_id")
+if not active_dataset_id:
+    st.warning("⚠️ No active dataset found. Please upload a dataset on the Overview page to unlock audit reports!")
+    st.stop()
+
 with st.spinner("Compiling Energy Intelligence Audit Report..."):
-    report_data = load_reports_data()
-    insight_data = load_insight_data()
+    report_data = load_reports_data(active_dataset_id)
+    insight_data = load_insight_data(active_dataset_id)
 
 if report_data:
     st.success("✅ Audit report generated successfully.")
+
+    # PDF Download Button
+    import requests
+    from dashboard.utils.data_loader import get_auth_headers, API_BASE_URL
+    pdf_bytes = None
+    try:
+        res = requests.get(f"{API_BASE_URL}/reports/download", headers=get_auth_headers(), timeout=10)
+        if res.status_code == 200:
+            pdf_bytes = res.content
+    except Exception:
+        pass
+        
+    if not pdf_bytes and active_dataset_id:
+        try:
+            from services.pdf_generator import PDFGenerator
+            from services.preprocessing import DataPreprocessor
+            pdf_dir = DataPreprocessor().file_path.parent.parent / "outputs"
+            pdf_dir.mkdir(parents=True, exist_ok=True)
+            pdf_path = pdf_dir / f"report_{active_dataset_id}.pdf"
+            PDFGenerator.generate_pdf(report_data["summary_markdown"], str(pdf_path))
+            with open(pdf_path, "rb") as f:
+                pdf_bytes = f.read()
+        except Exception as e:
+            st.error(f"Error generating fallback PDF: {e}")
+            
+    if pdf_bytes:
+        st.download_button(
+            label="📥 Download PDF Audit Report",
+            data=pdf_bytes,
+            file_name=f"energy_audit_report_{active_dataset_id}.pdf",
+            mime="application/pdf",
+            use_container_width=True
+        )
 
     # AI reasoning-layer banner — this is the InsightAgent's judgment,
     # not a fixed rule, surfaced directly (perceive -> reason -> act).

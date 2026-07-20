@@ -12,8 +12,13 @@ render_header()
 
 st.title("💡 Optimization Recommendations")
 
+active_id = st.session_state.get("active_dataset_id")
+if not active_id:
+    st.warning("⚠️ No active dataset found. Please upload a dataset on the Overview page to unlock recommendations!")
+    st.stop()
+
 with st.spinner("Generating cost-saving recommendations..."):
-    recs_data = load_recommendation_data()
+    recs_data = load_recommendation_data(active_id)
 
 if recs_data:
     # 1. KPIs

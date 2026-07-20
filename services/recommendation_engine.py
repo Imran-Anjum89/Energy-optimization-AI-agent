@@ -6,6 +6,7 @@ Energy Optimization Agent
 """
 
 from services.logger import setup_logger
+from backend.database import DatabaseManager
 
 logger = setup_logger("RecommendationEngine")
 
@@ -20,7 +21,8 @@ class RecommendationEngine:
         self,
         usage_report,
         forecast_report,
-        anomaly_report
+        anomaly_report,
+        dataset_id: int = None
     ):
 
         import pandas as pd
@@ -31,6 +33,7 @@ class RecommendationEngine:
             if isinstance(self.forecast["forecast"], list):
                 self.forecast["forecast"] = pd.DataFrame(self.forecast["forecast"])
         self.anomaly = anomaly_report
+        self.dataset_id = dataset_id
 
         self.recommendations = []
 
@@ -366,6 +369,39 @@ class RecommendationEngine:
     # COMPLETE PIPELINE
     # =====================================================
 
+    def save_recommendations_to_db(self):
+        """Save recommendations into SQLite recommendations table."""
+        if not self.recommendations or self.dataset_id is None:
+            return
+        logger.info(f"Saving recommendations to database for dataset {self.dataset_id}...")
+        conn = DatabaseManager.get_connection()
+        cursor = conn.cursor()
+        try:
+            cursor.execute("DELETE FROM recommendations WHERE dataset_id = ?", (self.dataset_id,))
+            conn.commit()
+            
+            for rec in self.recommendations:
+                cursor.execute(
+                    """
+                    INSERT INTO recommendations (dataset_id, category, priority, recommendation, estimated_saving_percent)
+                    VALUES (?, ?, ?, ?, ?)
+                    """,
+                    (
+                        self.dataset_id,
+                        rec["category"],
+                        rec["priority"],
+                        rec["recommendation"],
+                        float(rec["estimated_saving_percent"])
+                    )
+                )
+            conn.commit()
+            logger.info("Recommendations saved to database successfully.")
+        except Exception as e:
+            conn.rollback()
+            logger.error(f"Failed to save recommendations to database: {e}")
+        finally:
+            conn.close()
+
     def run_pipeline(self):
         """
         Execute complete recommendation pipeline.
@@ -388,6 +424,8 @@ class RecommendationEngine:
         self.general_recommendations()
 
         report = self.generate_report()
+
+        self.save_recommendations_to_db()
 
         logger.info("=" * 60)
         logger.info(

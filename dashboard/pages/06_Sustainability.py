@@ -8,10 +8,13 @@ configure_page()
 render_sidebar()
 render_header()
 
-st.title("🌱 Sustainability Impact")
+active_id = st.session_state.get("active_dataset_id")
+if not active_id:
+    st.warning("⚠️ No active dataset found. Please upload a dataset on the Overview page to unlock sustainability metrics!")
+    st.stop()
 
 with st.spinner("Calculating environmental impact metrics..."):
-    recs_data = load_recommendation_data()
+    recs_data = load_recommendation_data(active_id)
 
 if recs_data:
     co2 = recs_data["co2"]

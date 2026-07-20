@@ -12,8 +12,13 @@ render_header()
 
 st.title("🔮 Consumption Forecasting")
 
+active_id = st.session_state.get("active_dataset_id")
+if not active_id:
+    st.warning("⚠️ No active dataset found. Please upload a dataset on the Overview page to unlock forecasting!")
+    st.stop()
+
 with st.spinner("Generating prediction projections using Facebook Prophet..."):
-    forecast_data = load_forecast_data()
+    forecast_data = load_forecast_data(active_id)
 
 if forecast_data:
     # 1. KPIs

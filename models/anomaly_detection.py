@@ -20,13 +20,12 @@ class AnomalyDetectionModel:
     Isolation Forest based anomaly detection model.
     """
 
-    def __init__(self):
-
+    def __init__(self, dataset_id: int = None):
+        self.dataset_id = dataset_id
         self.file_path = (
             config.PROCESSED_DATA_DIR /
             "processed_energy_data.csv"
         )
-
         self.df = None
         self.features = None
         self.model = None
@@ -37,15 +36,11 @@ class AnomalyDetectionModel:
     # =====================================================
 
     def load_data(self):
-
-        logger.info("Loading processed dataset from database...")
-
-        self.df = DatabaseManager.get_data()
-
+        logger.info(f"Loading processed dataset from database for dataset_id {self.dataset_id}...")
+        self.df = DatabaseManager.get_data(self.dataset_id)
         logger.info(
             f"Loaded {len(self.df):,} records."
         )
-
         return self.df
 
     # =====================================================
@@ -420,6 +415,46 @@ class AnomalyDetectionModel:
     # COMPLETE PIPELINE
     # =====================================================
 
+    def save_anomalies_to_db(self):
+        """Save the detected anomalies into SQLite alerts table."""
+        if self.results is None or self.dataset_id is None:
+            return
+        logger.info(f"Saving anomalies to database for dataset {self.dataset_id}...")
+        anomalies = self.results[self.results["Anomaly"] == -1]
+        conn = DatabaseManager.get_connection()
+        cursor = conn.cursor()
+        try:
+            cursor.execute("DELETE FROM alerts WHERE dataset_id = ?", (self.dataset_id,))
+            conn.commit()
+            
+            for _, row in anomalies.iterrows():
+                dt_str = str(row["Datetime"])
+                severity = str(row["Severity"])
+                active_power = float(row["Global_active_power"])
+                description = f"Anomaly detected on {dt_str}: Active power is abnormal ({active_power:.2f} kW)."
+                
+                cursor.execute(
+                    """
+                    INSERT INTO alerts (dataset_id, timestamp, type, severity, value, description)
+                    VALUES (?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        self.dataset_id,
+                        dt_str,
+                        "Anomaly",
+                        severity,
+                        active_power,
+                        description
+                    )
+                )
+            conn.commit()
+            logger.info("Anomalies saved to database successfully.")
+        except Exception as e:
+            conn.rollback()
+            logger.error(f"Failed to save anomalies to database: {e}")
+        finally:
+            conn.close()
+
     def run_pipeline(self):
         """
         Execute the complete anomaly detection pipeline.
@@ -438,6 +473,8 @@ class AnomalyDetectionModel:
         self.train_model()
 
         self.detect_anomalies()
+
+        self.save_anomalies_to_db()
 
         self.save_results()
 

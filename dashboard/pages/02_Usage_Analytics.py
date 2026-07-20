@@ -12,8 +12,13 @@ render_header()
 
 st.title("📈 Energy Usage Analytics")
 
+active_id = st.session_state.get("active_dataset_id")
+if not active_id:
+    st.warning("⚠️ No active dataset found. Please upload a dataset on the Overview page to unlock analytics!")
+    st.stop()
+
 with st.spinner("Analyzing usage patterns from dataset..."):
-    usage_data = load_usage_data()
+    usage_data = load_usage_data(active_id)
 
 if usage_data:
     # 1. KPIs

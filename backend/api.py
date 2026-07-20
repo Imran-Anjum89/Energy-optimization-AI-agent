@@ -8,14 +8,6 @@ Energy Optimization Agent
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from analytics.usage_analysis import UsageAnalyzer
-from models.forecasting import ForecastingModel
-from models.anomaly_detection import AnomalyDetectionModel
-from services.recommendation_engine import RecommendationEngine
-
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
-
 from backend.routes import (
     usage,
     forecast,
@@ -24,6 +16,8 @@ from backend.routes import (
     insights,
     chat,
     reports,
+    auth,
+    datasets,
 )
 
 app = FastAPI(
@@ -42,7 +36,6 @@ app.add_middleware(
 
 @app.get("/")
 def home():
-
     return {
         "project": "Energy Optimization Agent",
         "status": "Running",
@@ -50,6 +43,9 @@ def home():
     }
 
 
+# Include Routers
+app.include_router(auth.router)
+app.include_router(datasets.router)
 app.include_router(usage.router)
 app.include_router(forecast.router)
 app.include_router(anomaly.router)

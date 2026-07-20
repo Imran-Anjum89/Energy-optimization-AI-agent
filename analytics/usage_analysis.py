@@ -31,16 +31,15 @@ class UsageAnalyzer:
     used by multiple AI agents.
     """
 
-    def __init__(self):
+    def __init__(self, dataset_id: int = None):
         """
         Initialize analyzer.
         """
-
+        self.dataset_id = dataset_id
         self.file_path = (
             config.PROCESSED_DATA_DIR
             / "processed_energy_data.csv"
         )
-
         self.df = self.load_processed_data()
 
     # =====================================================
@@ -51,15 +50,11 @@ class UsageAnalyzer:
         """
         Load processed dataset from database.
         """
-
-        logger.info("Loading processed dataset from database...")
-
-        df = DatabaseManager.get_data()
-
+        logger.info(f"Loading processed dataset from database for dataset_id {self.dataset_id}...")
+        df = DatabaseManager.get_data(self.dataset_id)
         logger.info(
             f"Loaded {len(df):,} records successfully."
         )
-
         return df
 
     # =====================================================

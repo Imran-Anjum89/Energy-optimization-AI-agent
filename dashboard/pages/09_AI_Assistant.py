@@ -17,7 +17,16 @@ st.caption(
 
 # Show current alert level so the chat opens with context, same source of
 # truth as the Reports page banner.
-insight_data = load_insight_data()
+active_dataset_id = st.session_state.get("active_dataset_id")
+if not active_dataset_id:
+    st.warning("⚠️ No active dataset found. Please upload a dataset on the Overview page to unlock the AI Assistant!")
+    st.stop()
+
+if st.session_state.get("last_active_dataset_id") != active_dataset_id:
+    st.session_state.chat_history = []
+    st.session_state.last_active_dataset_id = active_dataset_id
+
+insight_data = load_insight_data(active_dataset_id)
 if insight_data:
     alert_level = insight_data.get("alert_level", "Normal")
     icon = {"Urgent": "🔴", "Watch": "🟠", "Normal": "🟢"}.get(alert_level, "🟢")
@@ -57,7 +66,7 @@ if user_message:
 
     with st.chat_message("assistant"):
         with st.spinner("Thinking..."):
-            result = send_chat_message(user_message, st.session_state.chat_history[:-1])
+            result = send_chat_message(user_message, st.session_state.chat_history[:-1], dataset_id=active_dataset_id)
             reply = result.get("reply", "Sorry, I couldn't generate a response.")
             source = result.get("source", "fallback")
         st.markdown(reply)
