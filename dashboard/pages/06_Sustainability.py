@@ -3,6 +3,7 @@ from components.header import render_header
 from components.sidebar import render_sidebar
 from components.theme import configure_page
 from utils.data_loader import load_recommendation_data
+from components.floating_ai import floating_ai
 
 configure_page()
 render_sidebar()
@@ -81,3 +82,4 @@ if recs_data:
 
 else:
     st.warning("Unable to load sustainability data.")
+floating_ai()

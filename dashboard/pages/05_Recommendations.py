@@ -4,6 +4,7 @@ from components.header import render_header
 from components.sidebar import render_sidebar
 from components.theme import configure_page
 from utils.data_loader import load_recommendation_data
+from components.floating_ai import floating_ai
 from backend.config import config
 
 configure_page()
@@ -103,3 +104,5 @@ if recs_data:
 
 else:
     st.warning("Unable to load optimization recommendations.")
+
+floating_ai()

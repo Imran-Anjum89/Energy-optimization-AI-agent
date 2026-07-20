@@ -15,7 +15,6 @@ a[data-testid="stPageLink"]{
     transition:0.2s;
 
 }
-
 /* Hover */
 
 a[data-testid="stPageLink"]:hover{

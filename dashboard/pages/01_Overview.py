@@ -7,6 +7,7 @@ from components.metrics import current_usage
 from components.agent_pipeline import render_pipeline
 from components.recommendation_cards import recommendations
 from components.onboarding import render_onboarding_wizard
+from components.floating_ai import floating_ai
 
 
 render_header()
@@ -37,3 +38,6 @@ else:
     st.write("")
 
     recommendations()
+
+    floating_ai()
+

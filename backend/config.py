@@ -6,6 +6,15 @@ Energy Optimization Agent
 import os
 from pathlib import Path
 
+DEVELOPER_MODE = (
+    os.getenv(
+        "DEVELOPER_MODE",
+        "False"
+    ).lower()
+    ==
+    "true"
+)
+
 try:
     from dotenv import load_dotenv
     load_dotenv()

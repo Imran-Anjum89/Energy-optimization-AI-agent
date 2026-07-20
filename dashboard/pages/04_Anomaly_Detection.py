@@ -5,6 +5,7 @@ from components.header import render_header
 from components.sidebar import render_sidebar
 from components.theme import configure_page
 from utils.data_loader import load_anomaly_data
+from components.floating_ai import floating_ai
 
 configure_page()
 render_sidebar()
@@ -52,7 +53,7 @@ if anomaly_data:
         color_discrete_sequence=["#DC2626"]
     )
     fig_hourly.update_layout(template="plotly_white", height=350)
-    st.plotly_chart(fig_hourly, use_container_width=True)
+    st.plotly_chart(fig_hourly, width="stretch")
 
     # 3. Scatter plot of anomaly events
     st.subheader("🔬 Anomaly Events Scatter Plot")
@@ -74,7 +75,7 @@ if anomaly_data:
             },
         )
         fig_scatter.update_layout(template="plotly_white", height=400)
-        st.plotly_chart(fig_scatter, use_container_width=True)
+        st.plotly_chart(fig_scatter, width="stretch")
     else:
         st.info("No anomaly events available to plot.")
 
@@ -94,7 +95,9 @@ if anomaly_data:
         return f'background-color: {color}'
         
     styled_df = high_risk_df.style.applymap(color_severity, subset=['Severity'])
-    st.dataframe(styled_df, use_container_width=True, hide_index=True)
+    st.dataframe(styled_df, width="stretch", hide_index=True)
 
 else:
     st.warning("Unable to load anomaly data.")
+
+floating_ai()

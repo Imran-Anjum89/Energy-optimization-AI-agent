@@ -5,6 +5,7 @@ from components.header import render_header
 from components.sidebar import render_sidebar
 from components.theme import configure_page
 from utils.data_loader import load_usage_data
+from components.floating_ai import floating_ai
 
 configure_page()
 render_sidebar()
@@ -54,7 +55,7 @@ if usage_data:
         color_discrete_sequence=["#15803D"]
     )
     fig_daily.update_layout(template="plotly_white", height=400)
-    st.plotly_chart(fig_daily, use_container_width=True)
+    st.plotly_chart(fig_daily, width="stretch")
 
     # 3. Two columns for Submeter distribution and Weekday/weekend
     left, right = st.columns(2)
@@ -74,7 +75,7 @@ if usage_data:
             color_discrete_sequence=px.colors.sequential.Greens_r
         )
         fig_pie.update_layout(template="plotly_white", height=350)
-        st.plotly_chart(fig_pie, use_container_width=True)
+        st.plotly_chart(fig_pie, width="stretch")
         
     with right:
         st.subheader("📅 Weekday vs. Weekend Analysis")
@@ -91,7 +92,7 @@ if usage_data:
             color_discrete_sequence=["#16A34A", "#86EFAC"]
         )
         fig_bar.update_layout(template="plotly_white", height=350, showlegend=False)
-        st.plotly_chart(fig_bar, use_container_width=True)
+        st.plotly_chart(fig_bar, width="stretch")
 
     # 4. Hourly consumption trend
     st.subheader("⏰ Average Hourly Profile (Peak Analysis)")
@@ -108,7 +109,9 @@ if usage_data:
         color_discrete_sequence=["#22C55E"]
     )
     fig_hourly.update_layout(template="plotly_white", height=350)
-    st.plotly_chart(fig_hourly, use_container_width=True)
+    st.plotly_chart(fig_hourly, width="stretch")
 
 else:
     st.warning("Unable to load usage data. Please verify dataset is preprocessed.")
+
+floating_ai()

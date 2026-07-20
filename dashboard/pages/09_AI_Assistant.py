@@ -50,7 +50,7 @@ if not st.session_state.chat_history:
         "How do I reduce my energy costs?",
     ]
     for col, starter in zip(cols, starters):
-        if col.button(starter, use_container_width=True):
+        if col.button(starter, width="stretch"):
             st.session_state.pending_message = starter
 
 user_message = st.chat_input("Ask about your energy data...")
