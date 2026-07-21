@@ -97,7 +97,10 @@ if anomaly_data:
             color = '#ECFDF5'
         return f'background-color: {color}'
         
-    styled_df = high_risk_df.style.applymap(color_severity, subset=['Severity'])
+    if hasattr(high_risk_df.style, 'map'):
+        styled_df = high_risk_df.style.map(color_severity, subset=['Severity'])
+    else:
+        styled_df = high_risk_df.style.applymap(color_severity, subset=['Severity'])
     st.dataframe(styled_df, width="stretch", hide_index=True)
 
 else:
