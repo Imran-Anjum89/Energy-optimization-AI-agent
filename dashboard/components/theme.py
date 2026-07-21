@@ -1,6 +1,13 @@
+import sys
+from pathlib import Path
+
+# Ensure project root is in python path to support dashboard.* imports
+root_path = str(Path(__file__).resolve().parent.parent.parent)
+if root_path not in sys.path:
+    sys.path.insert(0, root_path)
+
 import streamlit as st
 from dashboard.components.auth_ui import show_login_interface
-from pathlib import Path
 
 
 def configure_page():

@@ -1,4 +1,14 @@
+import sys
 from pathlib import Path
+
+# Add project root and dashboard folder to python path to resolve all imports
+root_path = str(Path(__file__).resolve().parent.parent)
+if root_path not in sys.path:
+    sys.path.insert(0, root_path)
+dashboard_path = str(Path(__file__).resolve().parent)
+if dashboard_path not in sys.path:
+    sys.path.insert(0, dashboard_path)
+
 import streamlit as st
 import requests
 import time
