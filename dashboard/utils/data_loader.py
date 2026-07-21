@@ -229,3 +229,35 @@ def send_chat_message(message: str, history: list, dataset_id: int = None) -> di
         "insight": load_insight_data(dataset_id=dataset_id),
     }
     return ChatService().answer(message, history, reports)
+
+
+def check_active_dataset_status():
+    """Checks the status of the active dataset. If not completed, renders warning/error and stops page execution."""
+    active_id = st.session_state.get("active_dataset_id")
+    if not active_id:
+        return
+    
+    from backend.database import DatabaseManager
+    conn = DatabaseManager.get_connection()
+    cursor = conn.cursor()
+    try:
+        cursor.execute("SELECT status, error_message, filename FROM datasets WHERE id = ?", (active_id,))
+        row = cursor.fetchone()
+        if row:
+            status, err, filename = row
+            if status in ["uploading", "cleaning", "processing"]:
+                st.warning(f"⏳ The dataset `{filename}` is currently being processed by the AI pipeline (Status: **{status}**).")
+                st.info("The dashboard will unlock once processing is complete. Please wait...")
+                if st.button("🔄 Refresh Status", use_container_width=True):
+                    st.rerun()
+                st.stop()
+            elif status == "failed":
+                st.error(f"❌ The AI pipeline failed to process the dataset `{filename}`.")
+                if err:
+                    st.error(f"**Error Details:** {err}")
+                st.info("Please upload a new valid dataset on the **Input Data** page.")
+                st.stop()
+    except Exception as e:
+        st.error(f"Error checking dataset status: {e}")
+    finally:
+        conn.close()

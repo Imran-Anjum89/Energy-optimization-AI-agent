@@ -165,6 +165,7 @@ def render_sidebar():
             new_dataset_id = index_map[selected_label]
             if st.session_state.get("active_dataset_id") != new_dataset_id:
                 st.session_state["active_dataset_id"] = new_dataset_id
+                st.cache_data.clear()
                 st.rerun()
                 
             # If the active dataset has failed, show error message

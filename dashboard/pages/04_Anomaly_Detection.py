@@ -11,6 +11,9 @@ configure_page()
 render_sidebar()
 render_header()
 
+from dashboard.utils.data_loader import check_active_dataset_status
+check_active_dataset_status()
+
 st.title("🚨 Anomaly Detection")
 
 active_id = st.session_state.get("active_dataset_id")

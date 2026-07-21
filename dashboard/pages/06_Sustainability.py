@@ -9,6 +9,9 @@ configure_page()
 render_sidebar()
 render_header()
 
+from dashboard.utils.data_loader import check_active_dataset_status
+check_active_dataset_status()
+
 active_id = st.session_state.get("active_dataset_id")
 if not active_id:
     st.warning("⚠️ No active dataset found. Please upload a dataset on the Overview page to unlock sustainability metrics!")

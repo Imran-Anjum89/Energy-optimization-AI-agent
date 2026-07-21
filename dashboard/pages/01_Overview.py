@@ -16,6 +16,9 @@ configure_page()
 render_sidebar()
 render_header()
 
+from dashboard.utils.data_loader import check_active_dataset_status
+check_active_dataset_status()
+
 active_dataset_id = st.session_state.get("active_dataset_id")
 
 if active_dataset_id is None:

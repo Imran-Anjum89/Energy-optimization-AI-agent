@@ -121,6 +121,7 @@ def render_onboarding_wizard():
                 if uploaded_id:
                     st.session_state[file_key] = True
                     st.session_state["active_dataset_id"] = uploaded_id
+                    st.cache_data.clear()
                     st.toast("File uploaded successfully! Redirecting...")
                     st.success("Dataset registered. Starting AI Analytics and Forecasting pipeline!")
                     st.rerun()

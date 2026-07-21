@@ -108,6 +108,7 @@ def render_uploader_widget(widget_key):
                 if uploaded_id:
                     st.session_state[file_key] = True
                     st.session_state["active_dataset_id"] = uploaded_id
+                    st.cache_data.clear()
                     status.update(label="🎉 Pipeline Ingestion Complete!", state="complete", expanded=False)
                     st.success("Redirecting to the Executive Overview dashboard...")
                     time.sleep(1.2)

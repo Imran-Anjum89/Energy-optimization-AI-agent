@@ -108,6 +108,7 @@ def show_login_interface():
                     # Resolve active dataset id for user
                     active_ds = DatabaseManager.get_active_dataset_id(user["id"])
                     st.session_state["active_dataset_id"] = active_ds
+                    st.cache_data.clear()
                     st.success("Successfully logged in!")
                     st.rerun()
                 else:
