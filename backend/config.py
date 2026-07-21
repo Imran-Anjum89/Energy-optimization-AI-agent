@@ -78,7 +78,7 @@ class Config:
     def ELECTRICITY_RATE(self) -> float:
         try:
             from dotenv import load_dotenv
-            load_dotenv(self.BASE_DIR / ".env", override=True)
+            load_dotenv(self.BASE_DIR / ".env", override=False)
         except Exception:
             pass
         try:
@@ -94,7 +94,7 @@ class Config:
     def CO2_PER_KWH(self) -> float:
         try:
             from dotenv import load_dotenv
-            load_dotenv(self.BASE_DIR / ".env", override=True)
+            load_dotenv(self.BASE_DIR / ".env", override=False)
         except Exception:
             pass
         try:
@@ -110,7 +110,7 @@ class Config:
     def ANTHROPIC_API_KEY(self):
         try:
             from dotenv import load_dotenv
-            load_dotenv(self.BASE_DIR / ".env", override=True)
+            load_dotenv(self.BASE_DIR / ".env", override=False)
         except Exception:
             pass
         return os.environ.get("ANTHROPIC_API_KEY")
@@ -120,17 +120,32 @@ class Config:
         os.environ["ANTHROPIC_API_KEY"] = str(value) if value else ""
 
     @property
+    def GEMINI_API_KEY(self):
+        try:
+            from dotenv import load_dotenv
+            load_dotenv(self.BASE_DIR / ".env", override=False)
+        except Exception:
+            pass
+        return os.environ.get("GEMINI_API_KEY")
+
+    @GEMINI_API_KEY.setter
+    def GEMINI_API_KEY(self, value):
+        os.environ["GEMINI_API_KEY"] = str(value) if value else ""
+
+    @property
     def INSIGHT_MODEL(self):
         try:
             from dotenv import load_dotenv
-            load_dotenv(self.BASE_DIR / ".env", override=True)
+            load_dotenv(self.BASE_DIR / ".env", override=False)
         except Exception:
             pass
-        return os.environ.get("INSIGHT_MODEL", "claude-sonnet-4-6")
+        default_model = "gemini-3.1-flash-lite" if os.environ.get("GEMINI_API_KEY") else "claude-sonnet-4-6"
+        return os.environ.get("INSIGHT_MODEL", default_model)
 
     @INSIGHT_MODEL.setter
     def INSIGHT_MODEL(self, value):
-        os.environ["INSIGHT_MODEL"] = str(value) if value else "claude-sonnet-4-6"
+        default_model = "gemini-3.1-flash-lite" if os.environ.get("GEMINI_API_KEY") else "claude-sonnet-4-6"
+        os.environ["INSIGHT_MODEL"] = str(value) if value else default_model
 
 
 config = Config()

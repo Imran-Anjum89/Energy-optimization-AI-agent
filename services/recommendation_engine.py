@@ -27,15 +27,27 @@ class RecommendationEngine:
 
         import pandas as pd
 
-        self.usage = usage_report
-        self.forecast = forecast_report
+        self.usage = usage_report or {}
+        self.forecast = forecast_report or {}
         if isinstance(self.forecast, dict) and "forecast" in self.forecast:
             if isinstance(self.forecast["forecast"], list):
                 self.forecast["forecast"] = pd.DataFrame(self.forecast["forecast"])
-        self.anomaly = anomaly_report
+        self.anomaly = anomaly_report or {}
         self.dataset_id = dataset_id
 
         self.recommendations = []
+
+    def _safe_float(self, val, default=0.0):
+        if val is None:
+            return default
+        try:
+            import math
+            fval = float(val)
+            if math.isnan(fval) or math.isinf(fval):
+                return default
+            return fval
+        except (ValueError, TypeError):
+            return default
 
     # =====================================================
     # PEAK USAGE
@@ -50,15 +62,22 @@ class RecommendationEngine:
             "Analyzing peak hour usage..."
         )
 
-        peak_hour = (
-            self.usage["peak_usage"]["peak_hour"]
-        )
+        peak_usage = self.usage.get("peak_usage", {})
+        if not peak_usage:
+            return self.recommendations
 
-        peak_power = (
-            self.usage["peak_usage"][
-                "peak_hour_average_kw"
-            ]
-        )
+        peak_hour = peak_usage.get("peak_hour")
+        peak_power = peak_usage.get("peak_hour_average_kw")
+
+        if peak_hour is None or peak_power is None:
+            return self.recommendations
+
+        try:
+            import math
+            if math.isnan(peak_hour) or math.isnan(peak_power):
+                return self.recommendations
+        except Exception:
+            return self.recommendations
 
         self.recommendations.append({
 
@@ -70,9 +89,9 @@ class RecommendationEngine:
 
             "recommendation":
                 f"Reduce appliance usage around "
-                f"{peak_hour}:00 when average "
+                f"{int(peak_hour)}:00 when average "
                 f"consumption reaches "
-                f"{peak_power:.2f} kW.",
+                f"{float(peak_power):.2f} kW.",
 
             "estimated_saving_percent":
                 8
@@ -94,11 +113,12 @@ class RecommendationEngine:
             "Analyzing weekend usage..."
         )
 
-        difference = (
-            self.usage["weekday_weekend"][
-                "difference_kw"
-            ]
-        )
+        weekday_weekend = self.usage.get("weekday_weekend", {})
+        if not weekday_weekend:
+            return self.recommendations
+
+        difference = weekday_weekend.get("difference_kw")
+        difference = self._safe_float(difference)
 
         if difference > 0:
 
@@ -136,20 +156,27 @@ class RecommendationEngine:
             "Analyzing forecast..."
         )
 
-        forecast_df = self.forecast["forecast"]
+        import pandas as pd
+        forecast_df = self.forecast.get("forecast")
+        if forecast_df is None:
+            return self.recommendations
+            
+        if isinstance(forecast_df, list):
+            forecast_df = pd.DataFrame(forecast_df)
+            
+        if not isinstance(forecast_df, pd.DataFrame) or forecast_df.empty:
+            return self.recommendations
 
         average_forecast = round(
-            forecast_df["Predicted_Energy_kWh"].mean(),
+            self._safe_float(forecast_df["Predicted_Energy_kWh"].mean()),
             2
         )
 
-        historical_average = (
-            self.usage["consumption"][
-                "average_daily_energy_kwh"
-            ]
+        historical_average = self._safe_float(
+            self.usage.get("consumption", {}).get("average_daily_energy_kwh")
         )
 
-        if average_forecast > historical_average:
+        if average_forecast > historical_average and historical_average > 0:
 
             increase = round(
 
@@ -202,11 +229,12 @@ class RecommendationEngine:
             "Analyzing anomalies..."
         )
 
-        anomaly_percent = (
-            self.anomaly["statistics"][
-                "anomaly_percentage"
-            ]
-        )
+        statistics = self.anomaly.get("statistics", {})
+        if not statistics:
+            return self.recommendations
+
+        anomaly_percent = statistics.get("anomaly_percentage")
+        anomaly_percent = self._safe_float(anomaly_percent)
 
         if anomaly_percent > 0.5:
 
@@ -294,19 +322,17 @@ class RecommendationEngine:
 
         saving_percent = sum(
 
-            recommendation[
-                "estimated_saving_percent"
-            ]
+            recommendation.get(
+                "estimated_saving_percent", 0
+            )
 
             for recommendation
             in self.recommendations
 
         )
 
-        average_daily = (
-            self.usage["consumption"][
-                "average_daily_energy_kwh"
-            ]
+        average_daily = self._safe_float(
+            self.usage.get("consumption", {}).get("average_daily_energy_kwh")
         )
 
         from services.savings_calculator import SavingsCalculator

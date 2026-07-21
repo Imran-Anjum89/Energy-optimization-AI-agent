@@ -93,52 +93,9 @@ st.divider()
 # Developer Only
 # -----------------------------------
 
-if developer_mode:
-
-
-    st.subheader(
-        "🤖 AI / LLM Configuration"
-    )
-
-
-    st.caption(
-        "Developer settings only"
-    )
-
-
-    api_key_input = st.text_input(
-
-        "Anthropic API Key",
-
-        type="password",
-
-        value=config.ANTHROPIC_API_KEY or "",
-
-        help=
-        "Used by AI Assistant and Insight Agent"
-    )
-
-
-    insight_model_input = st.text_input(
-
-        "Insight Model",
-
-        value=
-        config.INSIGHT_MODEL
-        or
-        "claude-sonnet-4-6"
-
-    )
-
-
-else:
-
-
-    # Keep existing values internally
-
-    api_key_input = config.ANTHROPIC_API_KEY
-
-    insight_model_input = config.INSIGHT_MODEL
+# Keep existing values internally (hidden from UI)
+api_key_input = config.ANTHROPIC_API_KEY
+insight_model_input = config.INSIGHT_MODEL
 
 
 
@@ -266,22 +223,13 @@ def save_env_variables(variables: dict):
 
 if st.button(
     "💾 Save Configuration Settings",
-    width="stretch"
+    use_container_width=True
 ):
 
 
     config.ELECTRICITY_RATE = rate_input
 
     config.CO2_PER_KWH = co2_input
-
-
-    if developer_mode:
-
-
-        config.ANTHROPIC_API_KEY = api_key_input
-
-        config.INSIGHT_MODEL = insight_model_input
-
 
 
     save_env_variables({
@@ -291,18 +239,119 @@ if st.button(
 
 
         "CO2_PER_KWH":
-        str(co2_input),
-
-
-        "ANTHROPIC_API_KEY":
-        api_key_input,
-
-
-        "INSIGHT_MODEL":
-        insight_model_input
+        str(co2_input)
 
     })
 
+    # Trigger automatic data analysis and price recalculation for active dataset
+    active_id = st.session_state.get("active_dataset_id")
+    if active_id:
+        with st.spinner("🔄 Recalculating price, data analysis, and savings..."):
+            try:
+                # 1. Fetch cached analysis, forecast, and anomaly results to avoid model re-fitting
+                from dashboard.utils.data_loader import load_usage_data, load_forecast_data, load_anomaly_data
+                usage_report = load_usage_data(active_id)
+                forecast_report = load_forecast_data(active_id)
+                anomaly_report = load_anomaly_data(active_id)
+                
+                # Fallback to direct calculation if not cached
+                if not usage_report:
+                    from analytics.usage_analysis import UsageAnalyzer
+                    usage_report = UsageAnalyzer(dataset_id=active_id).generate_report()
+                if not forecast_report:
+                    from models.forecasting import ForecastingModel
+                    forecast_report = ForecastingModel(dataset_id=active_id).run_pipeline()
+                if not anomaly_report:
+                    from models.anomaly_detection import AnomalyDetectionModel
+                    anomaly_report = AnomalyDetectionModel(dataset_id=active_id).run_pipeline()
+                
+                # 2. Clear old recommendations, insight, and report caches
+                from backend.cache import CacheManager
+                import json
+                
+                cache_keys = [
+                    f"dataset_{active_id}_recommendations",
+                    f"dataset_{active_id}_insight",
+                    f"dataset_{active_id}_report"
+                ]
+                for key in cache_keys:
+                    cache_file = CacheManager.CACHE_DIR / f"{key}.json"
+                    if cache_file.exists():
+                        try:
+                            cache_file.unlink()
+                        except Exception:
+                            pass
+                            
+                st.cache_data.clear()
+                
+                # 3. Recalculate Recommendation Engine
+                from services.recommendation_engine import RecommendationEngine
+                engine = RecommendationEngine(usage_report, forecast_report, anomaly_report, dataset_id=active_id)
+                rec_report = engine.run_pipeline()
+                
+                # 4. Recalculate Insight Agent
+                from agents.insight_agent import InsightAgent
+                insight_report = InsightAgent().execute({
+                    "usage": usage_report,
+                    "forecast": forecast_report,
+                    "anomaly": anomaly_report,
+                    "recommendation": rec_report
+                })
+                
+                # 5. Recalculate Markdown Audit Report
+                from services.report_generator import ReportGenerator
+                data = {
+                    "usage": usage_report,
+                    "forecast": forecast_report,
+                    "anomaly": anomaly_report,
+                    "recommendation": rec_report,
+                    "insight": insight_report
+                }
+                generator = ReportGenerator(data)
+                final_report = generator.generate_report()
+                
+                # 6. Recalculate PDF
+                from services.preprocessing import DataPreprocessor
+                from services.pdf_generator import PDFGenerator
+                preprocessor = DataPreprocessor()
+                pdf_dir = preprocessor.file_path.parent.parent / "outputs"
+                pdf_dir.mkdir(parents=True, exist_ok=True)
+                pdf_path = pdf_dir / f"report_{active_id}.pdf"
+                PDFGenerator.generate_pdf(final_report.get("summary_markdown", ""), str(pdf_path))
+                
+                # 7. Update reports table in DB
+                from backend.database import DatabaseManager
+                conn = DatabaseManager.get_connection()
+                cursor = conn.cursor()
+                savings_json = json.dumps(rec_report.get("savings", {}))
+                co2_json = json.dumps(rec_report.get("co2", {}))
+                
+                cursor.execute(
+                    """
+                    INSERT OR REPLACE INTO reports (dataset_id, summary_markdown, alert_level, status, pdf_path, savings_json, co2_json)
+                    VALUES (?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        active_id,
+                        final_report.get("summary_markdown", ""),
+                        final_report.get("alert_level", "Normal"),
+                        "completed",
+                        str(pdf_path),
+                        savings_json,
+                        co2_json
+                    )
+                )
+                conn.commit()
+                conn.close()
+                
+                # 8. Store new results in CacheManager
+                CacheManager.set(f"dataset_{active_id}_recommendations", rec_report)
+                CacheManager.set(f"dataset_{active_id}_insight", insight_report)
+                CacheManager.set(f"dataset_{active_id}_report", final_report)
+                
+                st.toast("⚡ Pricing and data analysis successfully recalculated!")
+            except Exception as e:
+                st.error(f"❌ Error during recalculation: {e}")
 
 
     st.success(

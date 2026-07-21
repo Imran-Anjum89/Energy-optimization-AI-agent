@@ -71,7 +71,7 @@ if user_message:
             source = result.get("source", "fallback")
         st.markdown(reply)
         if source == "fallback":
-            st.caption("⚠️ Running in fallback mode - set ANTHROPIC_API_KEY for full reasoning.")
+            st.caption("⚠️ Running in fallback mode - set GEMINI_API_KEY for full reasoning.")
 
     st.session_state.chat_history.append({"role": "assistant", "content": reply})
 

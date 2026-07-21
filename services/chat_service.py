@@ -50,13 +50,6 @@ CURRENT PIPELINE DATA:
 {context_json}
 """
 
-FALLBACK_NOTE = (
-    "(AI chat is running in fallback mode - no LLM API key is configured, "
-    "so this is a templated response rather than a reasoned answer. Set "
-    "ANTHROPIC_API_KEY to enable full conversational reasoning.)"
-)
-
-
 class ChatService:
     def __init__(self):
         self.client = LLMClient()
@@ -70,7 +63,11 @@ class ChatService:
         """
         if not self.client.is_available():
             return {
-                "reply": self._fallback_reply(message, reports),
+                "reply": self._fallback_reply(
+                    message,
+                    reports,
+                    "no LLM API key is configured, so this is a templated response rather than a reasoned answer. Set GEMINI_API_KEY to enable full conversational reasoning."
+                ),
                 "source": "fallback",
             }
 
@@ -80,8 +77,13 @@ class ChatService:
             return {"reply": reply, "source": "llm"}
         except Exception as exc:
             logger.error(f"Chat LLM call failed, falling back: {exc}")
+            err_msg = str(exc)
+            if "429" in err_msg or "quota" in err_msg.lower() or "limit" in err_msg.lower() or "exhausted" in err_msg.lower():
+                reason = "Gemini API rate limit or daily quota exceeded (429 Too Many Requests). Please wait a moment or check your API key's tier."
+            else:
+                reason = f"Gemini API call failed: {err_msg}"
             return {
-                "reply": self._fallback_reply(message, reports),
+                "reply": self._fallback_reply(message, reports, reason),
                 "source": "fallback",
             }
 
@@ -143,7 +145,7 @@ class ChatService:
         )
         return self.client.generate(prompt, system=system_prompt)
 
-    def _fallback_reply(self, message: str, reports: dict) -> str:
+    def _fallback_reply(self, message: str, reports: dict, reason: str = None) -> str:
         """
         A deterministic, still-grounded reply used only when no LLM is
         configured or the call failed. Answers the most common intents
@@ -184,4 +186,13 @@ class ChatService:
                 "Ask about anomalies, savings, or risk for more detail."
             )
 
-        return f"{body}\n\n{FALLBACK_NOTE}"
+        if reason:
+            fallback_note = f"(AI chat is running in fallback mode - {reason})"
+        else:
+            fallback_note = (
+                "(AI chat is running in fallback mode - no LLM API key is configured, "
+                "so this is a templated response rather than a reasoned answer. Set "
+                "GEMINI_API_KEY to enable full conversational reasoning.)"
+            )
+
+        return f"{body}\n\n{fallback_note}"

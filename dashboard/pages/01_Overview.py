@@ -1,5 +1,7 @@
 import streamlit as st
 
+from components.sidebar import render_sidebar
+from components.theme import configure_page
 from components.header import render_header
 from components.kpi_cards import render_kpi_cards
 from components.charts import daily_usage_chart
@@ -10,6 +12,8 @@ from components.onboarding import render_onboarding_wizard
 from components.floating_ai import floating_ai
 
 
+configure_page()
+render_sidebar()
 render_header()
 
 active_dataset_id = st.session_state.get("active_dataset_id")

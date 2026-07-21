@@ -103,7 +103,29 @@ def render_sidebar():
 
         st.divider()
 
-        # User details
+        # Sidebar navigation (moved to top of layout)
+        pages = [
+            ("📥", "Input Data", "app.py"),
+            ("🏠", "Overview", "pages/01_Overview.py"),
+            ("📈", "Usage Analytics", "pages/02_Usage_Analytics.py"),
+            ("🔮", "Forecasting", "pages/03_Forecasting.py"),
+            ("🚨", "Anomaly Detection", "pages/04_Anomaly_Detection.py"),
+            ("💡", "Recommendations", "pages/05_Recommendations.py"),
+            ("🌱", "Sustainability", "pages/06_Sustainability.py"),
+            ("📄", "Reports", "pages/07_Reports.py"),
+            ("⚙", "Settings", "pages/08_Settings.py"),
+            ("💬", "AI Assistant", "pages/09_AI_Assistant.py")
+        ]
+
+        for icon, label, page in pages:
+            st.page_link(
+                page,
+                label=f"{icon}  {label}"
+            )
+
+        st.divider()
+
+        # User details (moved below navigation menu)
         st.markdown(f"👤 **{user['name']}**")
         st.caption(f"Organization: {user['organization']}")
         
@@ -113,7 +135,7 @@ def render_sidebar():
 
         st.divider()
 
-        # Dataset Management
+        # Dataset Management (moved below user details)
         st.markdown("### 📂 Datasets")
         datasets = get_user_datasets(user["id"])
         
@@ -154,74 +176,19 @@ def render_sidebar():
                 if st.button("Refresh Status", use_container_width=True):
                     st.rerun()
         else:
-            st.info("No datasets uploaded yet. Upload one below to get started!")
+            st.info("No datasets uploaded yet. Click 'Input Data' to upload.")
             st.session_state["active_dataset_id"] = None
 
-        # Upload Area
-        uploaded_file = st.file_uploader(
-            "Upload CSV/Excel",
-            type=["csv", "xlsx", "xls"],
-            key="sidebar_file_uploader",
-            label_visibility="collapsed"
-        )
-        
-        if uploaded_file:
-            # Check if this file has already been processed to prevent infinite loop on rerun
-            file_key = f"uploaded_{uploaded_file.name}_{uploaded_file.size}"
-            if not st.session_state.get(file_key):
-                file_bytes = uploaded_file.read()
-                
-                # API upload or direct fallback
-                uploaded_id = None
-                err = None
-                try:
-                    res = requests.post(
-                        f"{API_BASE_URL}/datasets/upload",
-                        headers={"X-User-ID": str(user["id"])},
-                        files={"file": (uploaded_file.name, file_bytes)},
-                        timeout=5
-                    )
-                    if res.status_code == 200:
-                        uploaded_id = res.json()["id"]
-                    else:
-                        err = res.json().get("detail", "Upload failed.")
-                except Exception:
-                    pass
-
-                # Fallback to direct upload
-                if not uploaded_id and not err:
-                    uploaded_id, err = upload_dataset_direct(file_bytes, uploaded_file.name, user["id"])
-
-                if uploaded_id:
-                    st.session_state[file_key] = True
-                    st.session_state["active_dataset_id"] = uploaded_id
-                    st.toast("File uploaded successfully! Processing started...")
-                    st.rerun()
-                else:
-                    st.error(err or "Upload failed.")
-
         st.divider()
 
-        # Sidebar navigation
-        pages = [
-            ("🏠", "Overview", "pages/01_Overview.py"),
-            ("📈", "Usage Analytics", "pages/02_Usage_Analytics.py"),
-            ("🔮", "Forecasting", "pages/03_Forecasting.py"),
-            ("🚨", "Anomaly Detection", "pages/04_Anomaly_Detection.py"),
-            ("💡", "Recommendations", "pages/05_Recommendations.py"),
-            ("🌱", "Sustainability", "pages/06_Sustainability.py"),
-            ("📄", "Reports", "pages/07_Reports.py"),
-            ("⚙", "Settings", "pages/08_Settings.py"),
-            ("💬", "AI Assistant", "pages/09_AI_Assistant.py")
-        ]
-
-        for icon, label, page in pages:
-            st.page_link(
-                page,
-                label=f"{icon}  {label}"
-            )
-
-        st.divider()
         st.markdown("### 🤖 AI Status")
-        st.success("Online")
+        # Custom premium status pill
+        st.markdown(
+            """
+            <div style="background-color:rgba(34, 197, 94, 0.1); border:1px solid #22C55E; color:#22C55E; padding:8px 12px; border-radius:8px; font-weight:600; text-align:center; font-size:0.9em;">
+                🟢 System Online
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
         st.caption("v1.0.0 | © 2026 Energy SaaS")

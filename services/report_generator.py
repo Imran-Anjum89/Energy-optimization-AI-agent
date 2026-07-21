@@ -15,10 +15,30 @@ class ReportGenerator:
         """
         Create a comprehensive markdown summary report.
         """
+        def clean_val(v, default=0.0):
+            if v is None:
+                return default
+            try:
+                import math
+                f = float(v)
+                return default if math.isnan(f) or math.isinf(f) else f
+            except Exception:
+                return default
+
         # Usage Stats
-        avg_usage = self.usage.get("consumption", {}).get("average_daily_kwh", 0.0)
+        avg_usage = clean_val(
+            self.usage.get("consumption", {}).get("average_daily_energy_kwh", 
+            self.usage.get("consumption", {}).get("average_daily_kwh"))
+        )
         peak_hour = self.usage.get("peak_usage", {}).get("peak_hour", "N/A")
-        peak_kw = self.usage.get("peak_usage", {}).get("peak_hour_average_kw", 0.0)
+        if peak_hour is not None:
+            try:
+                import math
+                if isinstance(peak_hour, float) and math.isnan(peak_hour):
+                    peak_hour = "N/A"
+            except Exception:
+                pass
+        peak_kw = clean_val(self.usage.get("peak_usage", {}).get("peak_hour_average_kw", 0.0))
 
         # Forecast Stats
         forecast_eval = self.forecast.get("evaluation", {})
@@ -28,14 +48,38 @@ class ReportGenerator:
         # Anomaly Stats
         anomaly_stats = self.anomaly.get("statistics", {})
         anomaly_count = anomaly_stats.get("anomaly_records", 0)
-        anomaly_pct = anomaly_stats.get("anomaly_percentage", 0.0)
+        try:
+            import math
+            if anomaly_count is None or (isinstance(anomaly_count, float) and math.isnan(anomaly_count)):
+                anomaly_count = 0
+            else:
+                anomaly_count = int(anomaly_count)
+        except Exception:
+            anomaly_count = 0
+            
+        anomaly_pct = clean_val(anomaly_stats.get("anomaly_percentage", 0.0))
         critical_count = anomaly_stats.get("critical_anomalies", 0)
+        try:
+            import math
+            if critical_count is None or (isinstance(critical_count, float) and math.isnan(critical_count)):
+                critical_count = 0
+            else:
+                critical_count = int(critical_count)
+        except Exception:
+            critical_count = 0
 
         # Recommendations
         recs = self.recommendation.get("recommendations", [])
         savings = self.recommendation.get("savings", {})
-        monthly_saving = savings.get("estimated_monthly_savings_rupees", 0.0)
-        co2_reduction = self.recommendation.get("co2", {}).get("estimated_monthly_co2_reduction_kg", 0.0)
+        monthly_saving = clean_val(savings.get("estimated_monthly_savings_rupees", 0.0))
+        co2_reduction = clean_val(self.recommendation.get("co2", {}).get("estimated_monthly_co2_reduction_kg", 0.0))
+
+        # Weekday/weekend and submeter formatting values
+        weekday_avg = clean_val(self.usage.get('weekday_weekend', {}).get('weekday_average_kw', 0.0))
+        weekend_avg = clean_val(self.usage.get('weekday_weekend', {}).get('weekend_average_kw', 0.0))
+        kitchen_wh = clean_val(self.usage.get('submeter', {}).get('kitchen_wh', 0.0))
+        laundry_wh = clean_val(self.usage.get('submeter', {}).get('laundry_wh', 0.0))
+        hvac_wh = clean_val(self.usage.get('submeter', {}).get('water_heater_hvac_wh', 0.0))
 
         # AI Insight (reasoning layer) - only rendered if InsightAgent ran
         insight_section = ""
@@ -78,11 +122,11 @@ This report presents an automated analysis of home energy consumption patterns, 
 {insight_section}
 ## 2. Energy Usage Patterns
 The analyzer evaluated historical minute-level energy readings.
-* **Weekday vs Weekend:** Weekday average is {self.usage.get('weekday_weekend', {}).get('weekday_average_kw', 0.0):.2f} kW vs Weekend average {self.usage.get('weekday_weekend', {}).get('weekend_average_kw', 0.0):.2f} kW.
+* **Weekday vs Weekend:** Weekday average is {weekday_avg:.2f} kW vs Weekend average {weekend_avg:.2f} kW.
 * **Sub-metering Distribution:**
-  * Kitchen: {self.usage.get('submeter', {}).get('kitchen_wh', 0.0):,} Wh
-  * Laundry: {self.usage.get('submeter', {}).get('laundry_wh', 0.0):,} Wh
-  * HVAC & Water Heater: {self.usage.get('submeter', {}).get('water_heater_hvac_wh', 0.0):,} Wh
+  * Kitchen: {kitchen_wh:,.2f} Wh
+  * Laundry: {laundry_wh:,.2f} Wh
+  * HVAC & Water Heater: {hvac_wh:,.2f} Wh
 
 ---
 

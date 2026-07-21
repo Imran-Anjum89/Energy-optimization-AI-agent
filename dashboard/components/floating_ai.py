@@ -18,8 +18,8 @@ def floating_ai():
         right: 28px;
         bottom: 28px;
 
-        width: 74px !important;
-        height: 74px !important;
+        width: 148px !important;
+        height: 148px !important;
 
         border-radius: 50% !important;
 
@@ -70,7 +70,7 @@ def floating_ai():
 
         content:"🤖";
 
-        font-size:38px;
+        font-size:76px;
 
         position:absolute;
 
