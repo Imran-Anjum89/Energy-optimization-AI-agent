@@ -1,7 +1,7 @@
 import streamlit as st
 import plotly.express as px
 import pandas as pd
-from utils.data_loader import load_usage_data
+from dashboard.utils.data_loader import load_usage_data
 
 
 def daily_usage_chart():

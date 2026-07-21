@@ -8,7 +8,7 @@ from services.report_generator import ReportGenerator
 from agents.insight_agent import InsightAgent
 from services.chat_service import ChatService
 from backend.cache import CacheManager
-from utils.helpers import convert_numpy_types
+from dashboard.utils.helpers import convert_numpy_types
 
 API_BASE_URL = "http://127.0.0.1:8000"
 

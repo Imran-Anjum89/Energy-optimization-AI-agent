@@ -1,5 +1,5 @@
 import streamlit as st
-from utils.data_loader import load_usage_data, load_recommendation_data
+from dashboard.utils.data_loader import load_usage_data, load_recommendation_data
 
 
 def render_kpi_cards():
