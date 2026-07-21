@@ -17,3 +17,5 @@ pytest
 email-validator
 openpyxl
 xlrd
+fpdf2
+requests
