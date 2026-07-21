@@ -18,6 +18,12 @@ from components.theme import configure_page
 from components.sidebar import render_sidebar, upload_dataset_direct, API_BASE_URL
 from backend.database import DatabaseManager
 
+# Initialize the database schema (tables, indices) if they don't exist
+try:
+    DatabaseManager.initialize_db()
+except Exception as e:
+    st.error(f"Failed to initialize database schema: {e}")
+
 # Page Config and Authentication Check
 configure_page()
 

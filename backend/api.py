@@ -34,6 +34,16 @@ app.add_middleware(
 )
 
 
+from backend.database import DatabaseManager
+
+@app.on_event("startup")
+def on_startup():
+    try:
+        DatabaseManager.initialize_db()
+    except Exception as e:
+        print(f"Error during database initialization: {e}")
+
+
 @app.get("/")
 def home():
     return {
