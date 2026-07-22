@@ -179,8 +179,8 @@ def download_pdf_report(
             rep = get_reports(x_dataset_id=active_dataset_id)
             report_md = rep.get("summary_markdown", "")
             
-        from services.preprocessing import DataPreprocessor
-        pdf_dir = DataPreprocessor().file_path.parent.parent / "outputs"
+        from backend.config import config
+        pdf_dir = config.OUTPUT_DIR
         pdf_dir.mkdir(parents=True, exist_ok=True)
         pdf_id = active_dataset_id if active_dataset_id else "default"
         pdf_path = str(pdf_dir / f"report_{pdf_id}.pdf")

@@ -3,8 +3,13 @@ Project Configuration
 Energy Optimization Agent
 """
 
-import os
+import sys
 from pathlib import Path
+root_path = str(Path(__file__).resolve().parent.parent)
+if root_path not in sys.path:
+    sys.path.insert(0, root_path)
+
+import os
 
 DEVELOPER_MODE = (
     os.getenv(
@@ -42,8 +47,8 @@ class Config:
     # =====================================================
     # OUTPUT DIRECTORIES
     # =====================================================
-    OUTPUT_DIR = BASE_DIR / "outputs"
-    LOG_DIR = BASE_DIR / "logs"
+    OUTPUT_DIR = DATA_DIR / "outputs"
+    LOG_DIR = DATA_DIR / "logs"
 
     def __init__(self):
         self.DATA_DIR.mkdir(parents=True, exist_ok=True)

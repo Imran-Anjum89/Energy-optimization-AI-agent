@@ -311,10 +311,9 @@ if st.button(
                 final_report = generator.generate_report()
                 
                 # 6. Recalculate PDF
-                from services.preprocessing import DataPreprocessor
                 from services.pdf_generator import PDFGenerator
-                preprocessor = DataPreprocessor()
-                pdf_dir = preprocessor.file_path.parent.parent / "outputs"
+                from backend.config import config
+                pdf_dir = config.OUTPUT_DIR
                 pdf_dir.mkdir(parents=True, exist_ok=True)
                 pdf_path = pdf_dir / f"report_{active_id}.pdf"
                 PDFGenerator.generate_pdf(final_report.get("summary_markdown", ""), str(pdf_path))

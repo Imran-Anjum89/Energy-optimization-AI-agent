@@ -39,8 +39,8 @@ if report_data:
     if not pdf_bytes and active_dataset_id:
         try:
             from services.pdf_generator import PDFGenerator
-            from services.preprocessing import DataPreprocessor
-            pdf_dir = DataPreprocessor().file_path.parent.parent / "outputs"
+            from backend.config import config
+            pdf_dir = config.OUTPUT_DIR
             pdf_dir.mkdir(parents=True, exist_ok=True)
             pdf_path = pdf_dir / f"report_{active_dataset_id}.pdf"
             PDFGenerator.generate_pdf(report_data["summary_markdown"], str(pdf_path))

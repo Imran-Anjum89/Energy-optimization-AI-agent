@@ -235,7 +235,8 @@ def run_pipeline_async(dataset_id: int, file_path: str):
 
         # Step 8: PDF Generator
         from services.pdf_generator import PDFGenerator
-        pdf_dir = preprocessor.file_path.parent.parent / "outputs"
+        from backend.config import config
+        pdf_dir = config.OUTPUT_DIR
         pdf_dir.mkdir(parents=True, exist_ok=True)
         pdf_path = pdf_dir / f"report_{dataset_id}.pdf"
         
