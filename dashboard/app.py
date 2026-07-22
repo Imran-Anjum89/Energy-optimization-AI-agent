@@ -117,6 +117,38 @@ def render_uploader_widget(widget_key):
                     status.update(label="❌ Ingestion Failed", state="error")
                     st.error(err or "Failed to upload or parse the file. Check formatting.")
 
+def render_format_specs_and_download():
+    st.markdown("### 📋 Supported Format Specs")
+    st.markdown(
+        """
+        Telemetry files must contain minute-level or hourly entries with:
+        * **Datetime** (or separate `Date` and `Time` columns)
+        * **Global_active_power** (active power in kW)
+        * **Global_reactive_power** (reactive power in kW)
+        * **Voltage** (voltage in Volts)
+        * **Global_intensity** (current intensity in Amps)
+        * **Sub_metering_1** (Kitchen consumption Wh)
+        * **Sub_metering_2** (Laundry/Utility Wh)
+        * **Sub_metering_3** (HVAC/Water heater Wh)
+        """
+    )
+    
+    # Render Download Sample Button
+    sample_file_path = Path(__file__).resolve().parent.parent / "data" / "sample_data.csv"
+    if sample_file_path.exists():
+        try:
+            with open(sample_file_path, "r", encoding="utf-8") as f:
+                sample_csv = f.read()
+            st.download_button(
+                label="📥 Download 3-Day Sample CSV",
+                data=sample_csv,
+                file_name="energy_sample_3days.csv",
+                mime="text/csv",
+                use_container_width=True
+            )
+        except Exception:
+            pass
+
 # Main Display Logic
 if active_id and active_dataset_filename:
     left_col, right_col = st.columns([5, 3], gap="large")
@@ -163,20 +195,7 @@ if active_id and active_dataset_filename:
             render_uploader_widget("uploader_replace")
             
     with right_col:
-        st.markdown("### 📋 Supported Format Specs")
-        st.markdown(
-            """
-            Telemetry files must contain minute-level or hourly entries with:
-            * **Datetime** (or separate `Date` and `Time` columns)
-            * **Global_active_power** (active power in kW)
-            * **Global_reactive_power** (reactive power in kW)
-            * **Voltage** (voltage in Volts)
-            * **Global_intensity** (current intensity in Amps)
-            * **Sub_metering_1** (Kitchen consumption Wh)
-            * **Sub_metering_2** (Laundry/Utility Wh)
-            * **Sub_metering_3** (HVAC/Water heater Wh)
-            """
-        )
+        render_format_specs_and_download()
 
 else:
     left_col, right_col = st.columns([5, 3], gap="large")
@@ -187,20 +206,7 @@ else:
         render_uploader_widget("uploader_initial")
         
     with right_col:
-        st.markdown("### 📋 Supported Format Specs")
-        st.markdown(
-            """
-            Telemetry files must contain minute-level or hourly entries with:
-            * **Datetime** (or separate `Date` and `Time` columns)
-            * **Global_active_power** (active power in kW)
-            * **Global_reactive_power** (reactive power in kW)
-            * **Voltage** (voltage in Volts)
-            * **Global_intensity** (current intensity in Amps)
-            * **Sub_metering_1** (Kitchen consumption Wh)
-            * **Sub_metering_2** (Laundry/Utility Wh)
-            * **Sub_metering_3** (HVAC/Water heater Wh)
-            """
-        )
+        render_format_specs_and_download()
 
 st.divider()
 
