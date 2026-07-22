@@ -6,6 +6,12 @@ fixtures compute each report once per test run and reuse the on-disk
 CacheManager so repeated `pytest` invocations stay fast too.
 """
 
+import sys
+from pathlib import Path
+root_path = str(Path(__file__).resolve().parent.parent)
+if root_path not in sys.path:
+    sys.path.insert(0, root_path)
+
 import pytest
 
 from analytics.usage_analysis import UsageAnalyzer

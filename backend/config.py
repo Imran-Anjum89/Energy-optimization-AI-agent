@@ -45,6 +45,13 @@ class Config:
     OUTPUT_DIR = BASE_DIR / "outputs"
     LOG_DIR = BASE_DIR / "logs"
 
+    def __init__(self):
+        self.DATA_DIR.mkdir(parents=True, exist_ok=True)
+        self.RAW_DATA_DIR.mkdir(parents=True, exist_ok=True)
+        self.PROCESSED_DATA_DIR.mkdir(parents=True, exist_ok=True)
+        self.OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+        self.LOG_DIR.mkdir(parents=True, exist_ok=True)
+
     # =====================================================
     # MODEL DIRECTORY
     # =====================================================

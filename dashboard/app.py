@@ -139,11 +139,13 @@ def render_format_specs_and_download():
         try:
             with open(sample_file_path, "r", encoding="utf-8") as f:
                 sample_csv = f.read()
+            st.info("💡 **Quick Start**: Don't have a dataset? Download our pre-formatted 3-day sample telemetry data below to test the platform:")
             st.download_button(
-                label="📥 Download 3-Day Sample CSV",
+                label="📥 Download 3-Day Sample CSV (Recommended)",
                 data=sample_csv,
                 file_name="energy_sample_3days.csv",
                 mime="text/csv",
+                type="primary",
                 use_container_width=True
             )
         except Exception:

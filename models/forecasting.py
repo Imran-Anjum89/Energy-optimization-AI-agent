@@ -451,6 +451,8 @@ class ForecastingModel:
             filename
         )
 
+        config.OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+
         future = self.future_predictions()
 
         future.to_csv(

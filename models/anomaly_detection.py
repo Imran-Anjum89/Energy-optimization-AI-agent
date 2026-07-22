@@ -365,6 +365,8 @@ class AnomalyDetectionModel:
             filename
         )
 
+        config.OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+
         self.results.to_csv(
             output_path,
             index=False
